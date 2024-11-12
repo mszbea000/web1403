@@ -3,6 +3,7 @@ let app = require('./G-http-2.js');
 let fs = require('fs');
 let getData = ""
 const { log } = require('console');
+const { request } = require('http');
 function write(res, body) {
     res.write(JSON.stringify(body));
     res.end();
@@ -19,8 +20,8 @@ app.use("POST",'/printRecord', printRecord);
 app.use("POST",'/file', file);
 app.use('POST', '/data', dataFunc)
 app.use("GET", '/data', GETdataFunc)
-
 app.use("PUT", '/data', updateFunc)
+app.use("DELETE", '/data', deleteFunc)
 function sum(request, response){
     result = {
         data: parseInt(request.path[2]) + parseInt(request.path[3])
@@ -79,7 +80,7 @@ function updateFunc(request, response) {
                             write(response, { status: "Updayt complite" })
                         }
                     })
-                } 
+                }
                 
             })
         }
@@ -95,7 +96,6 @@ function GETdataFunc(request, response) {
         }
     })
 }
-
 function dataFunc(request, response) {
 
     fs.readFile(request.data.name, "utf-8", function (err, data) {
@@ -125,5 +125,29 @@ function dataFunc(request, response) {
 
     })
 }
-
+function deleteFunc(request, response){
+    fs.readFile("dataBase.json","utf-8",function(err,data){
+        if(err){
+            console.log("ERROR:", err);
+            write(response, { status: "ERROR!" + err })
+        }else{
+            getData=JSON.parse(data)
+            getData.records.forEach(function(item){
+                if(item.id === +request.path[2]){
+                    item.content=""
+                    fs.writeFile("dataBase.json",JSON.stringify(getData),"utf-8",function(err){
+                        if(err){
+                            console.log("ERROR:", err);
+                            write(response, { status: "ERROR!" + err })
+                        }else{
+                            console.log("Updayt complite");
+                            write(response, { status: "Delete Record" })
+                        }
+                        
+                    })
+                }
+            })
+        }
+    })
+}
 app.start();
