@@ -11,31 +11,38 @@ function write(res, body) {
 app.use('/test', function (request, response) {
     console.log('test.')
 });
-app.use('/sum', function (request, response) {
+app.use("POST",'/sum', sum);
+app.use("POST",'/multiply', multiply);
+app.use("GET",'/sum', sum);
+app.use("GET",'/multiply', multiply);
+app.use("POST",'/printRecord', printRecord);
+app.use("POST",'/file', file);
+app.use('POST', '/data', dataFunc)
+app.use("GET", '/data', GETdataFunc)
+
+
+function sum(request, response){
     result = {
         data: parseInt(request.path[2]) + parseInt(request.path[3])
     };
 
     write(response, result);
-});
-app.use('/multiply', function (request, response) {
+}
+function multiply(request, response){
     result = {
         data: parseInt(request.path[2]) * parseInt(request.path[3])
     };
     write(response, result);
-});
-app.use('/printRecord', function (request, response) {
+}
+function printRecord(request, response){
     result = {
         "name": request.path[2],
         "family": request.path[3],
         "email": request.path[4]
     }
     write(response, result);
-});
-
-app.use('/file', function (request, response) {
-
-
+}
+function file(request, response){
     fs.writeFile(request.data.name, request.data.content, function (err) {
         if (err) {
             console.log('FAILLLLL')
@@ -46,32 +53,6 @@ app.use('/file', function (request, response) {
             write(response, { status: "OK" })
         }
     });
-});
-
-app.use('POST', '/data', dataFunc)
-app.use("GET", '/data', GETdataFunc)
-
-
-app.use("PUT", '/data', updateFunc)
-
-function updateFunc(request, response) {
-    fs.readFile("dataBase.json", "utf-8", function (err, data) {
-        if (err) {
-            console.log("ERROR:", err);
-            write(response, { status: "ERROR!" + err })
-        } else {
-            getData = JSON.parse(data)
-            getData.data.forEach(function (item) {
-                if (item.id === request.path[2]) {
-                    item.content = request.data
-                    fs.watchFile("dataBase.json", JSON.stringify(getData))
-                } else {
-                    console.log("id not finded");
-                    write(response, { status: "id not finded" })
-                }
-            })
-        }
-    })
 }
 function GETdataFunc(request, response) {
     fs.readFile("dataBase.txt", "utf-8", function (err, data) {
